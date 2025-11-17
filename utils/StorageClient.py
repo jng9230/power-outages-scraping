@@ -4,6 +4,8 @@ import traceback
 import sys
 from datetime import datetime, timezone
 from typing import List, Dict, Optional, Tuple, Any
+from .parseTimeDelta import print_all_files_recursive
+
 class StorageClient:
     def __init__(self):
         self.bucket_exists = False
@@ -49,9 +51,13 @@ class StorageClient:
 
 
     def upload_file_processed(self, local_path, s3_path):
-        new_s3_path = f"{s3_path}"
-        self._upload_file(local_path, new_s3_path, is_raw=False)
-
+        try:
+            new_s3_path = f"{s3_path}"
+            self._upload_file(local_path, new_s3_path, is_raw=False)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            traceback.print_exc() 
+            sys.exit(1)
 
     def get_keys_since_time(self, 
                         prefix: str, 
@@ -99,7 +105,7 @@ class StorageClient:
         
         return [key for _, key in target_keys_with_time]
 
-    def download_file(self, s3_path: str, local_path: str, is_raw):
+    def download_file(self, s3_path: str, local_path: str, is_raw: bool):
         """
         Downloads an object from S3 to a specific local path.
         """
